@@ -17,7 +17,6 @@ interface LoginCredentials {
 
 export const register = async (userData: User): Promise<User> => {
   try {
-    // Note: The API will auto-generate an ID if not provided
     const response = await axios.post<User>(`${API_URL}/users`, {
       username: userData.username,
       email: userData.email,
@@ -37,7 +36,6 @@ export const register = async (userData: User): Promise<User> => {
 
 export const login = async (credentials: LoginCredentials): Promise<string> => {
   try {
-    // Note: FakeStoreAPI has a separate auth endpoint
     const response = await axios.post<{token: string}>(`${API_URL}/auth/login`, {
       username: credentials.username,
       password: credentials.password
@@ -56,7 +54,7 @@ export const login = async (credentials: LoginCredentials): Promise<string> => {
     throw new Error(errorMessage);
   }
 };
-// Similarly for other functions
+
 export const logout = async (): Promise<void> => {
   try {
     await AsyncStorage.removeItem('userToken');

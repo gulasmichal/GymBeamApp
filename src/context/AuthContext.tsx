@@ -5,27 +5,34 @@ interface AuthContextType {
   userToken: string | null;
   isGuest: boolean;
   isLoading: boolean;
+  justLoggedOut: boolean;
+  setJustLoggedOut: (value: boolean) => void;
   signIn: (credentials: {
     username: string;
     password: string;
   }) => Promise<void>;
   signOut: () => Promise<void>;
   continueAsGuest: () => Promise<void>;
+  goToLogin: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
   userToken: null,
   isGuest: false,
   isLoading: true,
+  justLoggedOut: false,
+  setJustLoggedOut: () => {},
   signIn: async () => {},
   signOut: async () => {},
   continueAsGuest: async () => {},
+  goToLogin: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userToken, setUserToken] = useState<string | null>(null);
   const [isGuest, setIsGuest] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [justLoggedOut, setJustLoggedOut] = useState(false);
 
   const signIn = async ({
     username,
@@ -36,7 +43,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }) => {
     try {
       setIsLoading(true);
-      // Your actual login API call
       const response = await fetch("https://fakestoreapi.com/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await AsyncStorage.setItem("userToken", data.token);
         setUserToken(data.token);
         setIsGuest(false);
+        setJustLoggedOut(false);
       } else {
         throw new Error(data.message || "Login failed");
       }
@@ -57,15 +64,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await AsyncStorage.multiRemove(["userToken", "isGuest"]);
-    setUserToken(null);
-    setIsGuest(false);
+    try {
+      setIsLoading(true);
+      await AsyncStorage.multiRemove(["userToken", "isGuest"]);
+      setUserToken(null);
+      setIsGuest(false);
+      setJustLoggedOut(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const goToLogin = async () => {
+    try {
+      setIsLoading(true);
+      setJustLoggedOut(false);
+      setUserToken(null);
+      setIsGuest(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const continueAsGuest = async () => {
     await AsyncStorage.setItem("isGuest", "true");
     setIsGuest(true);
     setUserToken(null);
+    setJustLoggedOut(false);
   };
 
   useEffect(() => {
@@ -90,9 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         userToken,
         isGuest,
         isLoading,
+        justLoggedOut,
+        setJustLoggedOut,
         signIn,
         signOut,
         continueAsGuest,
+        goToLogin,
       }}
     >
       {children}

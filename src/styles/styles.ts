@@ -21,5 +21,4 @@ export const globalStyles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Add more global styles as needed
 });

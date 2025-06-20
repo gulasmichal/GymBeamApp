@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,8 +7,9 @@ import {
   Alert,
   ActivityIndicator,
   StyleSheet,
+  Modal,
+  Pressable,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../styles/styles";
@@ -18,12 +19,24 @@ import { RootStackParamList } from "../navigation";
 import { Image } from "react-native";
 
 export default function LoginScreen() {
-  const { signIn, continueAsGuest, isLoading: isAuthLoading } = useAuth();
+  const {
+    signIn,
+    continueAsGuest,
+    isLoading: isAuthLoading,
+    justLoggedOut,
+    setJustLoggedOut,
+  } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  useEffect(() => {
+    return () => {
+      setJustLoggedOut(false);
+    };
+  }, []);
 
   const handleLogin = async () => {
     if (!username.trim() || !password.trim()) {
@@ -46,6 +59,35 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Logout Confirmation Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={justLoggedOut}
+        onRequestClose={() => setJustLoggedOut(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Ionicons
+              name="checkmark-circle"
+              size={50}
+              color={colors.primary}
+              style={styles.modalIcon}
+            />
+            <Text style={styles.modalTitle}>Logged Out Successfully</Text>
+            <Text style={styles.modalText}>
+              You have been successfully logged out.
+            </Text>
+            <Pressable
+              style={styles.modalButton}
+              onPress={() => setJustLoggedOut(false)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.logoContainer}>
         <Image
           source={require("../../assets/GB_Logo_Energy_COM.webp")}
@@ -198,12 +240,50 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     fontWeight: "bold",
   },
-  footerLinks: {
-    marginTop: 30,
-    alignItems: "center",
-  },
   logoImage: {
     width: 240,
     height: 240,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginVertical: 10,
+    color: colors.primary,
+    textAlign: "center",
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+    color: colors.black,
+  },
+  modalButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    borderRadius: 5,
+    width: "100%",
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  modalIcon: {
+    marginBottom: 10,
   },
 });

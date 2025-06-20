@@ -28,12 +28,11 @@ export default function Navigation() {
             <Stack.Screen
               name="Products"
               component={ProductsScreen}
-              options={{ headerShown: false }} // This hides the ProductsScreen header
+              options={{ headerShown: false }}
             />
             <Stack.Screen
               name="ProductDetail"
               component={ProductDetailScreen}
-              // No options here means the default header will show
             />
           </>
         ) : (

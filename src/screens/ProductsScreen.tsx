@@ -23,7 +23,6 @@ import { useAuth } from "../context/AuthContext";
 
 type SortOption = "default" | "priceLow" | "priceHigh" | "rating" | "name";
 
-// ✅ Use the exact category names your API provides
 type Category =
   | "men's clothing"
   | "women's clothing"
@@ -31,10 +30,8 @@ type Category =
   | "electronics"
   | "all";
 
-// ✅ Only allow Ionicon icon names that you actually use
 type IconName = "apps" | "man" | "woman" | "diamond" | "phone-portrait";
 
-// ✅ Category-to-label/icon mapping
 const categoryButtons: { id: Category; icon: IconName; label: string }[] = [
   { id: "all", icon: "apps", label: "All" },
   { id: "men's clothing", icon: "man", label: "Men" },
@@ -43,11 +40,10 @@ const categoryButtons: { id: Category; icon: IconName; label: string }[] = [
   { id: "electronics", icon: "phone-portrait", label: "Electronics" },
 ];
 
-// ✅ Mapping for filtering based on category
 const categoryMap: Record<Category, string> = {
   "men's clothing": "men's clothing",
   "women's clothing": "women's clothing",
-  jewelry: "jewelery", // API spelling
+  jewelry: "jewelery",
   electronics: "electronics",
   all: "all",
 };
@@ -63,7 +59,7 @@ export default function ProductsScreen() {
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { signOut, userToken } = useAuth();
+  const { signOut, userToken, goToLogin } = useAuth();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -73,23 +69,11 @@ export default function ProductsScreen() {
     };
     fetchProducts();
   }, []);
-  /*
-  useEffect(() => {
-    if (activeCategory === "all") {
-      setFilteredProducts(products);
-    } else {
-      const filtered = products.filter(
-        (product) => product.category === categoryMap[activeCategory]
-      );
-      setFilteredProducts(filtered);
-    }
-  }, [activeCategory, products]);
-  */
+
   const handleSort = (sortOption: SortOption) => {
     setActiveSort(sortOption);
     setSortModalVisible(false);
 
-    // Start with the currently filtered products
     let sortedProducts = [...filteredProducts];
 
     switch (sortOption) {
@@ -106,7 +90,6 @@ export default function ProductsScreen() {
         sortedProducts.sort((a, b) => a.title.localeCompare(b.title));
         break;
       default:
-        // For "default", reapply the current category filter
         if (activeCategory === "all") {
           sortedProducts = [...products];
         } else {
@@ -122,7 +105,7 @@ export default function ProductsScreen() {
     if (userToken) {
       signOut();
     } else {
-      signOut(); // Simulated logout/login
+      goToLogin();
     }
   };
 
@@ -131,7 +114,6 @@ export default function ProductsScreen() {
     setCategoriesVisible(false);
     setActiveSort("default");
 
-    // Apply the category filter
     if (category === "all") {
       setFilteredProducts([...products]);
     } else {
@@ -462,7 +444,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.white,
     borderColor: colors.buttongray,
-    borderWidth: 2,
+    borderWidth: 3,
     paddingVertical: 10,
     paddingHorizontal: 15,
     marginHorizontal: 15,
